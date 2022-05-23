@@ -31,7 +31,56 @@ function GetOpponentData() {
              combinations_elements += "<b>Yes</b>";
         } else {
             combinations_elements += "<em>No</em>";
-        }        
+        }    
+
+        combinations_elements += "Three of a kind: ";
+        if (combinations.contains("Three of a kind")) {
+             combinations_elements += "<b>Yes</b>";
+        } else {
+            combinations_elements += "<em>No</em>";
+        }   
+        
+        combinations_elements += "Straight: ";
+        if (combinations.contains("Straight")) {
+             combinations_elements += "<b>Yes</b>";
+        } else {
+            combinations_elements += "<em>No</em>";
+        }   
+        
+        combinations_elements += "Flush: ";
+        if (combinations.contains("Flush")) {
+             combinations_elements += "<b>Yes</b>";
+        } else {
+            combinations_elements += "<em>No</em>";
+        }   
+        
+        combinations_elements += "Full house: ";
+        if (combinations.contains("Full house")) {
+             combinations_elements += "<b>Yes</b>";
+        } else {
+            combinations_elements += "<em>No</em>";
+        }      
+        
+        combinations_elements += "Four of a kind: ";
+        if (combinations.contains("Four of a kind")) {
+             combinations_elements += "<b>Yes</b>";
+        } else {
+            combinations_elements += "<em>No</em>";
+        } 
+        
+        combinations_elements += "Straight flush: ";
+        if (combinations.contains("Straight flush")) {
+             combinations_elements += "<b>Yes</b>";
+        } else {
+            combinations_elements += "<em>No</em>";
+        } 
+        
+        combinations_elements += "Royal flush: ";
+        if (combinations.contains("Royal flush")) {
+             combinations_elements += "<b>Yes</b>";
+        } else {
+            combinations_elements += "<em>No</em>";
+        }         
 
         let combinations_div = document.getElementById("opponent-combinations");
         combinations_div.innerHTML = combinations_elements
