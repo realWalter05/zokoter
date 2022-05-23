@@ -15,13 +15,14 @@ class Board:
 		
 	def add_to_board(self, card):
 		self.board_cards.append(card)
-		self.player_odds = self.get_players_odds()
+		self.player_odds = self.get_players_odds() if len(self.board_cards) > 0 else []
 
 	def get_pretty_print_board(self):
 		return (" ".join([card.get_pretty_print() for card in self.board_cards]))
 
 	def get_players_odds(self): 
 		players = [(card.get_poker_value() + card.get_poker_suit()) for player in self.players for card in player.cards]
+		print([i for i in self.board_cards])
 		board = [(card.get_poker_value() + card.get_poker_suit()) for card in self.board_cards]
 
 		odds = holdem_calc.calculate(board, True, 1, None, players, False)
@@ -259,6 +260,10 @@ class Board:
 	def get_opponent_winnability(self, opponent_combinations, players):
 		player_combinations = [player["combinations"] for player in players.values()]
 		combinations = [comb for combination in player_combinations for comb in combination]
+		
+		if not opponent_combinations:
+			# Game already won for our player
+			return False
 
 		if max(opponent_combinations) < max(combinations):
 			return False

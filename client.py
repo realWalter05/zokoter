@@ -5,7 +5,6 @@ from PIL import ImageChops
 from pyscreenshot import grab
 import os
 import time
-import random
 import socket
 
 
@@ -23,11 +22,39 @@ class CardClient:
 			msg = self.conn.recv(msg_length).decode(Server.FORMAT)
 
 			if msg == "!boardConn":
-				print("boardConn")
-				new_board_cards = self.detect_difference()
-				board_string = " ".join([self.get_card_name(card) for card in new_board_cards])
-				print(board_string)
-				self.send_msg(board_string)
+				new_card_string = None
+				while new_card_string is None:
+					print("boardConn")
+					new_board_cards = self.detect_difference()
+					new_board_array = [self.get_card_name(card, "board_cards") for card in new_board_cards]
+
+					falty = False
+					for idx, card in enumerate(new_board_array):
+						# Detect invalid scan
+						if not card:
+							continue
+						for i in range(idx):
+							if not new_board_array[i]:
+								falty = True
+
+					if falty or len([x for x in new_board_array if x]) != len(set([x for x in new_board_array if x])):
+						# Check for valid scan
+						print("falty")
+						continue
+
+					new_card_string = ""
+					for card in new_board_cards:	
+						card_name = self.get_card_name(card, "board_cards")
+						if not card_name:
+							continue
+
+						if not new_card_string:
+							new_card_string = card_name
+							continue					
+						new_card_string = new_card_string + " " + card_name 
+
+				print(new_card_string)
+				self.send_msg(new_card_string)
 
 
 			elif msg == "!sendcards":
@@ -36,7 +63,6 @@ class CardClient:
 				self.send_msg(cards)
 
 			print(msg)
-
 		
 		print("Connection has ended")	
 		input("exit on press")
@@ -44,7 +70,8 @@ class CardClient:
 
 	def get_server_conn(self):
 		client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		client.connect(Server.ADDR)
+		user_input_ip = input("Host machine IP: ") # IP Address of the host machine, vm must be in bridged connection mode (10.0.0.54 should be it on ether)
+		client.connect((user_input_ip, 7849))
 		return client
 
 	def close_server_conn(self):
@@ -63,13 +90,29 @@ class CardClient:
 	def scan_for_cards(self):
 		fcard = None
 		scard = None
-		while not fcard and not scard:
+		recheck = True
+
+		while not fcard or not scard:
 			region = (390, 53, 520, 128) # region = x1 y1 x2 y2
 			new_cards = grab(region)
 		
 			cards_img = self.get_card_images(new_cards)
 			fcard = self.get_card_name(cards_img[0], "cards")	
 			scard = self.get_card_name(cards_img[1], "cards")
+
+			if fcard == "NaN" or fcard == "NaN":
+				# Rechecking for no cards
+				if recheck:
+					fcard = None
+					scard = None
+					recheck = False
+					time.sleep(2)
+					continue
+			recheck = True
+
+		if fcard == "NaN" and scard == "NaN":
+			return ""
+
 		return fcard + " " + scard
 
 
@@ -78,25 +121,26 @@ class CardClient:
 		region = (505, 396, 930, 486) # region = x1 y1 x2 y2
 		while True:
 			# Grab the image
-			last_cards = grab(region)
+			last_cards = grab() # TODO region for grabbing, maybe the game table
 			# Regrap the image
 			#input("Next one on enter: ")
-			time.sleep(0.5)
-			new_cards = grab(region)
+			new_cards = grab()
 			
 			# Get difference
 			diff = ImageChops.difference(new_cards, last_cards)
 			change_box = diff.getbbox()
+			if change_box is not None: # TODO Percentage would be better, only one which is triggered by card change
+				# Cooldown to get images even if this functions activated while they were only moving and not settled
+				time.sleep(1)
+				new_cards = grab(region)
 
-			if change_box is not None: 
-				# The card region part has changed
 				cards_img = self.get_board_card_images(new_cards)
-				print("Changed")
-				#return cards_img
-				#self.get_card_name(cards_img[0])
-				#self.get_card_name(cards_img[1])
-				#cv2.imwrite("./data/cards/card"+str(random.randint(1, 9999))+".png", cards_img[0])
-				#cv2.imwrite("./data/cards/card"+str(random.randint(1, 9999))+".png", cards_img[1])
+				print(f"Changed")
+				last_cards = None
+				new_cards = None
+				change_bog = None
+				diff = None
+				return cards_img
 
 
 	def get_card_images(self, im):
@@ -111,7 +155,7 @@ class CardClient:
 		first_half_numpy = np.array(first_half)				
 		second_half_numpy = np.array(second_half)				
 		cv_first_half = first_half_numpy.astype(np.uint8)	
-		cv_second_half = second_half_numpy.astype(np.uint8)						
+		cv_second_half = second_half_numpy.astype(np.uint8)	
 
 		return [cv_first_half, cv_second_half]			
 
@@ -143,19 +187,22 @@ class CardClient:
 		return [cv_card00, cv_card01, cv_card02, cv_card03, cv_card04]	
 
 	def get_card_name(self, card_image, directory):
-		# Missing player cards Qs
+		most_accr = 1000000
+		card = ""
 		for image_name in os.listdir("./data/" + directory):
 			image = cv2.imread(os.path.join(".\\data\\" + directory + "\\", image_name))
 
 			# Get the difference
 			difference = cv2.subtract(image, card_image)    
-			result = not np.any(difference)
 
-			if result is True:
-				# Image is detected
-				card_name = image_name.split(".")[0]
-				print("This card is " + card_name)
-				return card_name
+			b, g, r = cv2.split(difference)
+			accur = cv2.countNonZero(b) + cv2.countNonZero(g) + cv2.countNonZero(r)				
+			if accur < most_accr:
+				most_accr = accur
+				card = card_name = image_name.split(".")[0]
+		if most_accr < 801:
+			print("This card is: " + card)
+			return card
 		return ""
 
 

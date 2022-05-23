@@ -5,19 +5,21 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js" integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf" crossorigin="anonymous"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="/static/js/main.js"></script>
     <link rel="icon" type="image/png" href="/static/img/zokoter_icon.png"/>
 </head>
-<body>
+<body onload="window.location='http://127.0.0.1:5000/board_update';">
     <header class="pb-4">
         <nav class="navbar bg-dark navbar-dark" style="min-height: 5rem;">
-            <div class="container-fluid">
+            <div class="container-fluid">            
                <a class="navbar-brand"><img src="/static/img/zokoter_icon.png" alt="icon" style="width: 2.85rem; height: 3rem; margin-right: .5rem;" />Zokoter - its not stealing if theyre stupid...</a>
                <style>.rotate {-webkit-animation: spin 4s linear infinite;} @keyframes spin {0% { -webkit-transform: rotate(0deg);}100% { -webkit-transform: rotate(360deg);}}</style>
-               <a href="/" class="text-white text-decoration-none px-4">
+               <a class="text-white text-decoration-none px-4">
                   {% if board %}
                      {{ board }}
                   {% endif %}
-                  <img style="width: 2rem; height: 2rem; cursor: pointer; margin-left: 1rem" onclick="this.classList.add('rotate'); " src="{{ url_for('static', filename='img/reload.png')}}" alt="Reload"/>
+                  <img style="width: 2rem; height: 2rem; cursor: pointer; -webkit-filter: invert(100%); filter: invert(100%);" onclick="this.classList.add('rotate'); GetOpponentData();" src="{{ url_for('static', filename='img/info_icon.png')}}" alt="Opponent"/>               </a>       
                </a>
             </div>
         </nav>
@@ -49,7 +51,6 @@
                   </div>
                </div>
                {% endfor %}
-            {% if opponent %}
             <div class="row p-3" style="height: 35vh;">
                 <div class="card shadow-lg p-2">
                     <div class="card-body">
@@ -57,7 +58,7 @@
                            <h5 class="card-title">Opponent</h5>
                            <small>-0.00$</small>
                            <br><br>
-                           <span class="p-2">
+                           <span class="p-2" id="opponenent-combinations">
                               High card:
                               {% if "High card" in opponent["combinations"] %}
                                  <b>Yes</b>
@@ -131,27 +132,25 @@
                         </div>
                         <div class="row"> 
                             <ul class="list-group list-group-flush col mx-4 text-center">
-                               <li class="list-group-item">
-                                  Best odds: {{ opponent["best_odds"] }}%
+                               <li class="list-group-item" id="opponent-best-odds">
+                                  Best odds: 
                                </li>
-                               <li class="list-group-item">
-                                  {{ opponent["best_cards"][0] }} {{ opponent["best_cards"][1] }}
+                               <li class="list-group-item" id="opponent-best-cards">
                                </li>
                             </ul>          
                             <ul class="list-group list-group-flush col mx-4 text-center">
-                               <li class="list-group-item">
-                                  Better odds chance: {{ opponent["better_odds"] }}%
+                               <li class="list-group-item" id="opponent-better-odds-chance">
+                                  Better odds chance: 
                                </li>
-                               <li class="list-group-item">
-                                  {{ opponent["lower_odds_count"] }} out of {{ opponent["all_odds_count"] }}
+                               <li class="list-group-item" id="opponent-odds-details">
+                                  out of
                                </li>
                             </ul>       
                             <ul class="list-group list-group-flush col mx-4 text-center">
-                               <li class="list-group-item">
-                                  {% if opponent["winnable"] %} Winnable {% else %} Unwinnable {% endif %}
+                               <li class="list-group-item" id="opponent-winnable">
                                </li>
-                               <li class="list-group-item">
-                                  Table position: {{ opponent["table_position"] }}
+                               <li class="list-group-item" id="opponent-table-position">
+                                  Table position: 
                                </li>
                             </ul>  
                                                                               
@@ -159,7 +158,6 @@
                      </div>                
                  </div>
             </div>
-            {% endif %}
         </section>
   	</main>
 </body>
