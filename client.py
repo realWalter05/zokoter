@@ -1,4 +1,3 @@
-from server import Server
 import cv2
 import numpy as np
 from PIL import ImageChops
@@ -7,6 +6,8 @@ import os
 import time
 import socket
 
+HEADER = 64
+FORMAT = "UTF-8"
 
 class CardClient:
 	def __init__(self):
@@ -15,11 +16,11 @@ class CardClient:
 		msg = ""
 		while msg != "!disconnect": 
 			# Receive instructions
-			msg_length = self.conn.recv(Server.HEADER).decode(Server.FORMAT)
+			msg_length = self.conn.recv(HEADER).decode(FORMAT)
 			if not msg_length:
 				return
 			msg_length = int(msg_length)
-			msg = self.conn.recv(msg_length).decode(Server.FORMAT)
+			msg = self.conn.recv(msg_length).decode(FORMAT)
 
 			if msg == "!boardConn":
 				new_card_string = None
@@ -78,11 +79,11 @@ class CardClient:
 		self.conn.close()
 
 	def send_msg(self, msg):
-		message = (msg).encode(Server.FORMAT)
+		message = (msg).encode(FORMAT)
 		msg_length = len(message)
 		
-		send_length = str(msg_length).encode(Server.FORMAT)
-		send_length += b" " * (Server.HEADER - len(send_length))
+		send_length = str(msg_length).encode(FORMAT)
+		send_length += b" " * (HEADER - len(send_length))
 
 		self.conn.send(send_length)
 		self.conn.send(message)
