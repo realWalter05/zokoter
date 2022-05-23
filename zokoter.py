@@ -21,8 +21,6 @@ def opponent():
     board_player_data = board.format_player_data()
     board_opponent_data = board.format_opponent_data(board_player_data) if len(board.board_cards) else None
     return jsonify(board_opponent_data)
-    #return render_template("index.html", players=board_player_data, opponent=board_opponent_data, board=board.get_pretty_print_board())    
-
 
 @app.route("/board_update")
 def board_update():

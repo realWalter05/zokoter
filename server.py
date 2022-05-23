@@ -6,8 +6,6 @@ import socket
 import time
 import threading
 
-# TODO nakej z nasich hracu foldne ale ostatni hrajou - Testnout ted uz jenom
-# TODO zkusit zrusit u socket to s tim kolik bytes prijde, protoze to jebe int conversion pri ziskavani opponent data
 
 class Server:
     # Define data
@@ -33,13 +31,11 @@ class Server:
             try:
                 self.server = self.start_server()
             except OSError:
-                Server.PORT += 1
-                print(Server.PORT)
                 print(f"Port {Server.PORT-1} is occupied. Trying {Server.PORT}")
-                time.sleep(5)
+                return
         self.server_listen()
+
         self.player_count = len(self.connections)
-        print(f"Number of our players: {self.player_count+1}")
         # Detect change in board
         if not self.board_connection:
             print("Connecting failed!")
@@ -68,18 +64,12 @@ class Server:
         board_updated = False
         while not board_updated:    
             deck = Deck()
-            try:
-                print("bc")
-                board_cards_string = self.get_board_cards() # TODO Exception block ig
-            except Exception:
-                print("trying again")
-                board_cards_string = self.get_board_cards()
+            board_cards_string = self.get_board_cards()
             board_cards = []
             if board_cards_string:
                 board_cards = [deck.get_from_deck(deck.get_values_for(card)) for card in board_cards_string.split(" ")]
-            print(self.board_cards, len(self.board_cards))
-            print(board_cards, len(board_cards))
-            if not self.board_cards and len(board_cards) == 3 or len(self.board_cards) == 5 and len(board_cards) == 0 or len(self.board_cards) == 0 and len(board_cards) == 0:
+
+            if not self.board_cards and len(board_cards) == 3 or len(self.board_cards) > 0 and len(board_cards) == 0 or len(self.board_cards) == 0 and len(board_cards) == 0:
                 # First flop ever
                 print("New round")
                 self.board = self.get_new_board(board_cards_string)   
@@ -127,7 +117,7 @@ class Server:
     def get_new_client_cards(self):
         card_list = []     
         for conn in self.connections:
-            input("next conn")
+            input("Scan cards on enter: ")
 
             cards = self.get_client_cards(conn)
             if cards == "":
@@ -175,10 +165,9 @@ class Server:
         print("Started listening for new connections")
         while running:
             # Client connects
-            print(len(self.connections))
             try:
                 conn, addr = self.server.accept()
-                print("stopped")
+                print(f"Player {len(self.connections)} connected")
                 self.connections.append(conn)
                 
                 if not self.board_connection:
@@ -191,5 +180,4 @@ class Server:
 
             except socket.timeout:
                 running = False        
-
         print("Stopped listening for new connections")
