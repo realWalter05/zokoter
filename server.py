@@ -14,8 +14,6 @@ class Server:
     SERVER = ""
     ADDR = (SERVER, PORT)
     FORMAT = "UTF-8"
-    DISCONNECT_MSG = "!DISCONNECT"
-    SHUTDOWN_MSG = "!SHUTDOWN"
 
     def __init__(self):
         self.player_count = 0
@@ -42,7 +40,7 @@ class Server:
             return
 
         board_cards_string = self.get_board_cards()
-        print(board_cards_string)
+        print(f"Board cards: {board_cards_string}")
         # Setting up board
         self.board = self.get_new_board(board_cards_string)
 

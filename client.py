@@ -71,7 +71,7 @@ class CardClient:
 
 	def get_server_conn(self):
 		client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		user_input_ip = input("Host machine IP: ") # IP Address of the host machine, vm must be in bridged connection mode (10.0.0.54 should be it on ether)
+		user_input_ip = input("Host machine IP: ") # IP Address of the host machine, vm must be in bridged connection mode
 		client.connect((user_input_ip, 7849))
 		return client
 
@@ -120,28 +120,33 @@ class CardClient:
 	def detect_difference(self):
 		# Specifing the region of the cards
 		region = (505, 396, 930, 486) # region = x1 y1 x2 y2
+		change_region = (20, 0, 1400, 850)
 		while True:
 			# Grab the image
-			last_cards = grab() # TODO region for grabbing, maybe the game table
+			last_cards = grab(change_region)
 			# Regrap the image
-			#input("Next one on enter: ")
-			new_cards = grab()
+			new_cards = grab(change_region)
 			
 			# Get difference
 			diff = ImageChops.difference(new_cards, last_cards)
+			print(diff)
 			change_box = diff.getbbox()
 			if change_box is not None: # TODO Percentage would be better, only one which is triggered by card change
 				# Cooldown to get images even if this functions activated while they were only moving and not settled
 				time.sleep(1)
-				new_cards = grab(region)
+				new_board_cards = grab(region)
 
-				cards_img = self.get_board_card_images(new_cards)
-				print(f"Changed")
-				last_cards = None
-				new_cards = None
-				change_bog = None
-				diff = None
-				return cards_img
+				cv_im0 = np.array(last_cards).astype(np.uint8)			
+				cv_im1 = np.array(new_cards).astype(np.uint8)
+
+				# Check only if image differs by cards moving
+				difference = cv2.subtract(cv_im1, cv_im0)  
+				b, g, r = cv2.split(difference)
+				accur = cv2.countNonZero(b) + cv2.countNonZero(g) + cv2.countNonZero(r) + cv2.countNonZero(r)	
+				print(f"Screen has changed {accur}")				
+				if accur > 20000:
+					cards_img = self.get_board_card_images(new_board_cards)
+					return cards_img
 
 
 	def get_card_images(self, im):

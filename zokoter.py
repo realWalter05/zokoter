@@ -26,7 +26,6 @@ def opponent():
 def board_update():
     server.update_board()
     board = server.get_board()   
-    print("after update")
     board_opponent_data = None
     return render_template("index.html", players=board.format_player_data(), opponent=board_opponent_data, board=board.get_pretty_print_board())    
 
