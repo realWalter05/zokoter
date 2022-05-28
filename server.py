@@ -19,6 +19,7 @@ class Server:
         self.player_count = 0
         self.board = None
         self.connections = []
+        self.player_names = []
         self.board_connection = None
         self.server = None
         self.board_cards = None
@@ -53,9 +54,11 @@ class Server:
             self.board_cards = [deck.get_from_deck(deck.get_values_for(card)) for card in board_cards_string.split(" ")]
         card_string = self.get_new_client_cards()
         print(card_string)
+        if not card_string:
+            return None
         hands = self.get_hands_from_card_string(card_string, deck)
         player_count = len(hands)
-        players = [Player(hands[i], i) for i in range(player_count)]
+        players = [Player(hands[i], i, self.player_names[i]) for i in range(player_count)]
         return Board(player_count, players, self.board_cards, deck) 
 
     def update_board(self):
@@ -70,13 +73,18 @@ class Server:
             if not self.board_cards and len(board_cards) == 3 or len(self.board_cards) > 0 and len(board_cards) == 0 or len(self.board_cards) == 0 and len(board_cards) == 0:
                 # First flop ever
                 print("New round")
-                self.board = self.get_new_board(board_cards_string)   
-                board_updated = True                      
+                board = self.get_new_board(board_cards_string)   
+                if board:
+                    self.board = board                   
+                    board_updated = True                      
             elif len(self.board_cards) < len(board_cards):
                 # Card added
                 print("Card added")
                 self.board.add_to_board(board_cards[len(board_cards) - 1])
-                board_updated = True                     
+                board = self.get_new_board(board_cards_string)   
+                if board:
+                    self.board = board                   
+                    board_updated = True                   
 
 
     def get_board(self):
@@ -115,7 +123,7 @@ class Server:
     def get_new_client_cards(self):
         card_list = []     
         for conn in self.connections:
-            input("Scan cards on enter: ")
+            #input("Scan cards on enter: ")
 
             cards = self.get_client_cards(conn)
             if cards == "":
@@ -167,6 +175,7 @@ class Server:
                 conn, addr = self.server.accept()
                 print(f"Player {len(self.connections)} connected")
                 self.connections.append(conn)
+                self.player_names.append(input("Player name: "))
                 
                 if not self.board_connection:
                     # Setting up connection which detects changes on board

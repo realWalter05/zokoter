@@ -285,7 +285,8 @@ class Board:
 				"preflop_rank" : player.get_card_ranking(),
 				"table_position" : player.table_position,
 				"rank" : self.get_player_rank(player.id) if len(self.board_cards) > 0 else 0,
-				"player_money" : player.money
+				"player_money" : player.money,
+				"player_name" : player.player_name
 			}
 		return players
 

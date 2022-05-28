@@ -101,7 +101,7 @@ class CardClient:
 			fcard = self.get_card_name(cards_img[0], "cards")	
 			scard = self.get_card_name(cards_img[1], "cards")
 
-			if fcard == "NaN" or fcard == "NaN":
+			if fcard == "NaN" and scard == "NaN":
 				# Rechecking for no cards
 				if recheck:
 					fcard = None
@@ -129,9 +129,8 @@ class CardClient:
 			
 			# Get difference
 			diff = ImageChops.difference(new_cards, last_cards)
-			print(diff)
 			change_box = diff.getbbox()
-			if change_box is not None: # TODO Percentage would be better, only one which is triggered by card change
+			if change_box is not None:
 				# Cooldown to get images even if this functions activated while they were only moving and not settled
 				time.sleep(1)
 				new_board_cards = grab(region)
@@ -144,7 +143,7 @@ class CardClient:
 				b, g, r = cv2.split(difference)
 				accur = cv2.countNonZero(b) + cv2.countNonZero(g) + cv2.countNonZero(r) + cv2.countNonZero(r)	
 				print(f"Screen has changed {accur}")				
-				if accur > 20000:
+				if accur > 15000:
 					cards_img = self.get_board_card_images(new_board_cards)
 					return cards_img
 

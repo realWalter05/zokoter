@@ -2,11 +2,12 @@ from deck import Card
 import pandas as pd
 
 class Player:
-	def __init__(self, cards, player_id):
+	def __init__(self, cards, player_id, player_name):
 		self.fcard = cards[0]
 		self.scard = cards[1]
 		self.cards = [self.fcard, self.scard]
 		self.id = player_id
+		self.player_name = player_name
 		self.money = 0
 		self.card_ranking = None
 		self.table_position = None
