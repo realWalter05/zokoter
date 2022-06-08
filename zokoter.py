@@ -1,6 +1,9 @@
 from flask import Flask, jsonify, render_template
 from server import Server
-
+# TODO zrusit recheck (uploadnout client z druhyho pc na github)
+# TODO neco se detect difference
+# TODO a maybe tam je nejakej bug ze kdyz se odpoji hraci, tak to pak nemuze spocitat odds nebo tak neco
+# TODO kdyz je pridana karta zeptat se na to kolik ma typek callnout a vypocit EV
 app = Flask(__name__)
 
 @app.route("/")
@@ -40,4 +43,4 @@ def board_update():
 
 
 if __name__ == "__main__": 
-    app.run(debug=True)
+    app.run()

@@ -1,6 +1,7 @@
 from threading import Thread
 from deck import Deck, Card
 from player import Player
+from equity_getter import get_equity
 import holdem_calc 
 import time
 
@@ -22,9 +23,7 @@ class Board:
 
 	def get_players_odds(self): 
 		players = [(card.get_poker_value() + card.get_poker_suit()) for player in self.players for card in player.cards]
-		print([i for i in self.board_cards])
 		board = [(card.get_poker_value() + card.get_poker_suit()) for card in self.board_cards]
-
 		odds = holdem_calc.calculate(board, True, 1, None, players, False)
 		return odds 
 
@@ -115,8 +114,8 @@ class Board:
 			player.pretty_print_cards()
 			boardss = [card.get_poker_value() + card.get_poker_suit() for card in self.board_cards]
 
-			print(self.get_player_odds(player.id))
-			print([self.translate_combination(combination) for combination in self.get_combinations(self.board_cards, player.cards)])
+			print(round(self.get_player_odds(player.id), 2))
+			print(" ".join([self.translate_combination(combination) for combination in self.get_combinations(self.board_cards, player.cards)]))
 
 		self.prettify_board()
 
@@ -133,7 +132,7 @@ class Board:
 		suits = [card.suit for card in board] + [hand[0].suit, hand[1].suit]
 		values = [card.value for card in board] + [hand[0].value, hand[1].value]
 		same_suit_count = max([suits.count(s) for s in suits])
-		sorted_values = sorted(values)
+		sorted_values = sorted(values) 
 		same_cards = sorted([values.count(value) for value in set(values)])
 		player_has = []
 
@@ -276,7 +275,6 @@ class Board:
 
 	def format_player_data(self):
 		players = {}
-		print(self.board_cards)
 		for player in self.players:
 			players[player.id] = {
 				"player_odds" : ("%.2f " % (round(self.get_player_odds(player.id), 2) * 100)) if len(self.board_cards) > 0 else "xxx",
@@ -286,9 +284,28 @@ class Board:
 				"table_position" : player.table_position,
 				"rank" : self.get_player_rank(player.id) if len(self.board_cards) > 0 else 0,
 				"player_money" : player.money,
-				"player_name" : player.player_name
+				"player_name" : player.player_name,
+				"equity": None
 			}
+		# Calculating expected value based on player odds
+		self.set_equity(players, self.players)
 		return players
+
+	def set_equity(self, players, players_raw):
+		# Setting expected value for best player
+		odds = []
+		for player in players:
+			odds.append(players[player]["player_odds"])
+		max_value = max(odds)
+		
+		player_id = odds.index(max_value)
+		player = players[player_id]
+
+		if players_raw[player_id].money_invested:
+			# Only if we know how much does the player have to call
+			hand = [players_raw[player_id].fcard.get_poker_value() + players_raw[player_id].fcard.get_poker_suit(), players_raw[player_id].scard.get_poker_value() + players_raw[player_id].scard.get_poker_suit()]
+			player_odds = get_equity(hand, [card.get_poker_value() + card.get_poker_suit() for card in self.board_cards])
+			player["equity"] = ((player_odds / 100) * (players_raw[player_id].money_invested + 100)) - ((1 - (player_odds / 100)) * players_raw[player_id].money_invested)		
 
 	def format_opponent_data(self, players):
 		opponent_data = self.get_opponent_cards_data()
@@ -304,20 +321,43 @@ class Board:
 		}
 		return opponent
 
-#if __name__ == "__main__":
-#	# Setup game
-#	for i in range(3):
-#		deck = Deck()
-#		player_count = 2
-#		players = [deck.draw_hand() for i in range(player_count)]
-#		board = [deck.get_card() for i in range(3)]    
-#		b = Board(player_count, players, board, deck)
-#	
-#		default = len(b.deck.available_cards)		
-#		print("Default " + str(default))
-#		for i in range(1):
-#			b.format_data()
-#			print(len(b.deck.available_cards))
+if __name__ == "__main__":
+	# Setup game
+	deck = Deck()
+	player_count = 2
+	players = [Player(deck.draw_hand(), i, "i") for i in range(player_count)]
+	#players = [Player((deck.get_from_deck((5, 0)), deck.get_from_deck((1, 0))), 0, "i"), \
+	#		Player((deck.get_from_deck((4, 2)), deck.get_from_deck((5, 3))), 1, "i")]
+	board = [deck.get_card() for i in range(3)]    
+	#board = [deck.get_from_deck(deck.get_values_for("As")), deck.get_from_deck(deck.get_values_for("2s")), deck.get_from_deck(deck.get_values_for("9c"))]    
+	b = Board(player_count, players, board, deck)
+	b.prettify_game()
+
+	player_data = b.format_player_data()
+	for player_id in player_data:
+		player = player_data[player_id]
+		print(f"{player['player_cards']} {player['combinations']} {player['player_odds']} {player['equity']}")
+
+	l = deck.get_card()
+	print(l.get_pretty_print())
+	b.add_to_board(l)
+
+	player_data = b.format_player_data()
+	for player_id in player_data:
+		player = player_data[player_id]
+		print(f"{player['player_cards']} {player['combinations']} {player['player_odds']} {player['equity']}")
+	
+	l = deck.get_card()
+	print(l.get_pretty_print())
+	b.add_to_board(l)
+
+	player_data = b.format_player_data()
+	for player_id in player_data:
+		player = player_data[player_id]
+		print(f"{player['player_cards']} {player['combinations']} {player['player_odds']} {player['equity']}")
+
+	#opponent_data = b.format_opponent_data(player_data)
+	#print(opponent_data)
 
 
 

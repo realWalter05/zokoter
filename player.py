@@ -8,6 +8,7 @@ class Player:
 		self.cards = [self.fcard, self.scard]
 		self.id = player_id
 		self.player_name = player_name
+		self.money_invested = 5
 		self.money = 0
 		self.card_ranking = None
 		self.table_position = None
