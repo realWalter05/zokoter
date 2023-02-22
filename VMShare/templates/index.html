@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Zokoter</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js" integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf" crossorigin="anonymous"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" href="/static/img/zokoter_icon.png"/>
+</head>
+<body onload="window.location = 'http://127.0.0.1:5000/board_update';">
+    <header class="pb-4">
+        <nav class="navbar bg-dark navbar-dark" style="min-height: 5rem;">
+            <div class="container-fluid">            
+               <a class="navbar-brand"><img src="/static/img/zokoter_icon.png" alt="icon" style="width: 2.85rem; height: 3rem; margin-right: .5rem;" />Zokoter - its not stealing if theyre stupid...</a>
+               <style>.rotate {-webkit-animation: spin 4s linear infinite;} @keyframes spin {0% { -webkit-transform: rotate(0deg);}100% { -webkit-transform: rotate(360deg);}}</style>
+               <a href="/opponent" class="text-white text-decoration-none">
+                  <img style="width: 2rem; height: 2rem; cursor: pointer;" onclick="this.classList.add('rotate'); " src="{{ url_for('static', filename='img/info_icon.png')}}" alt="Opponent"/>
+               </a>               
+               <a href="/board_update" class="text-white text-decoration-none px-4">
+                  {% if board %}
+                     {{ board }}
+                  {% endif %}
+                  <img style="width: 2rem; height: 2rem; cursor: pointer; margin-left: 1rem" onclick="this.classList.add('rotate'); " src="{{ url_for('static', filename='img/reload.png')}}" alt="Reload"/>
+               </a>               
+            </div>
+        </nav>
+    </header>
+ 	<main class="p-2">
+        <section id="overview" class="container">
+            <div class="row d-flex justify-content-center" style="height: 42vh">
+               
+               {% for key, player in players.items() %}
+               <div class="col-lg-4 p-3">
+                  <div class="card h-100 shadow-lg">
+                     <div class="card-body">
+                        <div class="text-center p-3">
+                           <h5 class="card-title">Player {{ key }}</h5>
+                           <small>{{ player["player_cards"] }}</small>
+                           <br><br>
+                           <span class="h4 m-2 p-1 {% if (player['rank'] + 1) == players|length %} alert-success {% endif %} {% if (player['rank']) == 0 %} alert-danger {% endif %}">{{ player["player_odds"] }}</span>
+                           <p>has {{ player["combinations"] }}</p>                           
+                        </div>
+                        <ul class="list-group list-group-flush">
+                           <li class="list-group-item">
+                              Preflop rank: {{ player["preflop_rank"] }}
+                           </li>
+                           <li class="list-group-item">
+                              Table position: {{ player["table_postion"] }}
+                           </li>
+                        </ul>                     
+                     </div>
+                  </div>
+               </div>
+               {% endfor %}
+            {% if opponent %}
+            <div class="row p-3" style="height: 35vh;">
+                <div class="card shadow-lg p-2">
+                    <div class="card-body">
+                        <div class="text-center p-3">
+                           <h5 class="card-title">Opponent</h5>
+                           <small>-0.00$</small>
+                           <br><br>
+                           <span class="p-2">
+                              High card:
+                              {% if "High card" in opponent["combinations"] %}
+                                 <b>Yes</b>
+                              {% else %}
+                                 <em>No</em>
+                              {% endif %}
+
+                              Pair:
+                              {% if "Pair" in opponent["combinations"] %}
+                                 <b>Yes</b>
+                              {% else %}
+                                 <em>No</em>
+                              {% endif %}
+
+                              Two pair:
+                              {% if "Two pair" in opponent["combinations"] %}
+                                 <b>Yes</b>
+                              {% else %}
+                                 <em>No</em>
+                              {% endif %}
+
+                              Three of a kind:
+                              {% if "Three of a kind" in opponent["combinations"] %}
+                                 <b>Yes</b>
+                              {% else %}
+                                 <em>No</em>
+                              {% endif %}
+
+                              Straight:
+                              {% if "Straight" in opponent["combinations"] %}
+                                 <b>Yes</b>
+                              {% else %}
+                                 <em>No</em>
+                              {% endif %}
+
+                              Flush:
+                              {% if "Flush" in opponent["combinations"] %}
+                                 <b>Yes</b>
+                              {% else %}
+                                 <em>No</em>
+                              {% endif %}
+
+                              Full house:
+                              {% if "Full house" in opponent["combinations"] %}
+                                 <b>Yes</b>
+                              {% else %}
+                                 <em>No</em>
+                              {% endif %}
+
+                              Four of a kind:
+                              {% if "Four of a kind" in opponent["combinations"] %}
+                                 <b>Yes</b>
+                              {% else %}
+                                 <em>No</em>
+                              {% endif %}       
+
+                              Straight flush:
+                              {% if "Straigh flush" in opponent["combinations"] %}
+                                 <b>Yes</b>
+                              {% else %}
+                                 <em>No</em>
+                              {% endif %}  
+
+                              Royal flush:
+                              {% if "Royal flush" in opponent["combinations"] %}
+                                 <b>Yes</b>
+                              {% else %}
+                                 <em>No</em>
+                              {% endif %}  
+                           </span>
+                        </div>
+                        <div class="row"> 
+                            <ul class="list-group list-group-flush col mx-4 text-center">
+                               <li class="list-group-item">
+                                  Best odds: {{ opponent["best_odds"] }}%
+                               </li>
+                               <li class="list-group-item">
+                                  {{ opponent["best_cards"][0] }} {{ opponent["best_cards"][1] }}
+                               </li>
+                            </ul>          
+                            <ul class="list-group list-group-flush col mx-4 text-center">
+                               <li class="list-group-item">
+                                  Better odds chance: {{ opponent["better_odds"] }}%
+                               </li>
+                               <li class="list-group-item">
+                                  {{ opponent["lower_odds_count"] }} out of {{ opponent["all_odds_count"] }}
+                               </li>
+                            </ul>       
+                            <ul class="list-group list-group-flush col mx-4 text-center">
+                               <li class="list-group-item">
+                                  {% if opponent["winnable"] %} Winnable {% else %} Unwinnable {% endif %}
+                               </li>
+                               <li class="list-group-item">
+                                  Table position: {{ opponent["table_position"] }}
+                               </li>
+                            </ul>  
+                                                                              
+                        </div>           
+                     </div>                
+                 </div>
+            </div>
+            {% endif %}
+        </section>
+  	</main>
+</body>
+</html>

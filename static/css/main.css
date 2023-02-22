@@ -1,0 +1,26 @@
+#icon {
+    width: 2.85rem; 
+    height: 3rem; 
+    margin-right: .5rem;
+}
+
+.rotate {
+    -webkit-animation: spin 4s linear infinite;
+} 
+
+@keyframes spin {
+    0% { -webkit-transform: rotate(0deg);}
+    100% { -webkit-transform: rotate(360deg);}
+}
+
+#nav {
+    min-height: 5rem;
+}
+
+#info-icon {
+    width: 2rem;
+    height: 2rem;
+    cursor: pointer;
+    -webkit-filter: invert(100%); 
+    filter: invert(100%);    
+}
